@@ -1,387 +1,349 @@
-# Casablanca Project
+# LetsGoo
 
-A web platform to discover **places, activities, experiences, and good deals in Casablanca**.
+**Discover places. Find experiences. Make plans.**
 
-The goal of Casablanca Project is to help people answer a simple question:
+LetsGoo is a web platform that helps people discover **places, activities, experiences, and good deals** — and get the practical information they need **before they go**.
 
-> **What can I do in Casablanca?**
+> **What should we do today? Where should we go? Is it worth it?**
 
-Instead of searching across Google Maps, Instagram, TikTok, and different websites, users can find the practical information they need in one place.
+Instead of switching between Google Maps, Instagram, TikTok, and multiple websites, visitors can explore options, compare them, and plan an outing in one place.
 
----
-
-## About the Project
-
-Casablanca is a large city with many things to discover:
-
-* Malls
-* Cinemas
-* Parks
-* Games
-* Sports
-* Entertainment centers
-* Cultural places
-* Outdoor activities
-* Indoor activities
-* Hidden places
-* Events
-* And more
-
-The problem is that discovering a place is not enough.
-
-Before going somewhere for the first time, people usually want to know:
-
-* How much does it cost?
-* Is it free or paid?
-* What can I do there?
-* Is it good for going alone?
-* Is it good for couples or friends?
-* What are the opening hours?
-* How can I get there?
-* Is public transport available?
-* Is parking available?
-* What should I know before going?
-* What do other visitors think?
-* Are there any discounts or good deals?
-
-**Casablanca Project brings all of this information together in one platform.**
+**Launch city:** Casablanca, Morocco  
+**Long-term vision:** Expand to other Moroccan cities and, eventually, destinations beyond Morocco.
 
 ---
 
-## Main Goal
+## Why LetsGoo?
 
-Help people discover Casablanca and make better decisions before visiting a place.
+Finding a place is only part of the decision. Before visiting, people want to know:
 
-The platform is designed for:
+- **What can I do there?** What activities and experiences are available?
+- **How much will it cost?** Is it free, paid, or discounted? What is the price per person?
+- **Who is it for?** Is it suitable for solo visitors, couples, friends, families, or children?
+- **When can I go?** What are the opening hours? Is a reservation required?
+- **How do I get there?** Is public transport available? Is there parking?
+- **What should I know first?** Are there special requirements or useful visitor tips?
+- **Is it worth visiting?** What do other visitors say?
 
-* People living in Casablanca
-* Students
-* Solo visitors
-* Couples
-* Groups of friends
-* Families
-* Moroccan tourists
-* International tourists
-* People who recently moved to Casablanca
+**LetsGoo brings these answers together so people can spend less time searching and more time exploring.**
 
----
+## Who It's For
 
-## Main Features
+- Locals looking for something new to do
+- Students searching for affordable outings
+- Solo visitors, couples, and groups of friends
+- Families and people planning activities with children
+- Domestic and international tourists
+- People who have recently moved to a city
 
-### Discover Places
+## Discover What To Do
 
-Browse places and activities available around Casablanca.
+LetsGoo is designed to cover different types of places and experiences, including:
 
-Examples:
+| Explore | Examples |
+| --- | --- |
+| Entertainment | Cinemas, gaming centers, bowling, escape rooms, karting |
+| Outdoors | Parks, beaches, nature spots, outdoor activities |
+| Sports & activities | Sports venues, recreational activities, workshops |
+| Culture | Museums, galleries, cultural spaces, local experiences |
+| Shopping & leisure | Malls, leisure centers, family destinations |
+| Hidden gems | Interesting and lesser-known spots |
+| Deals | Student discounts, group offers, birthday benefits, promotions |
 
-* Malls
-* Cinemas
-* Parks
-* Gaming centers
-* Karting
-* Bowling
-* Escape rooms
-* Sports
-* Beaches
-* Museums
-* Workshops
-* Cultural places
-
----
-
-### Search & Filters
-
-Find places based on your needs.
-
-Filters can include:
-
-* Category
-* Neighborhood
-* Free / Paid
-* Price range
-* Solo
-* Duo
-* Friends
-* Family
-* Kids
-* Indoor / Outdoor
-* Rating
-
-Example:
-
-> Find activities in Ain Diab for 4 friends under 150 MAD per person.
+Events and additional experience types may be introduced as the platform grows.
 
 ---
 
-### Place Information
+## MVP Features
 
-Each place can provide useful information such as:
+The first version focuses on the essentials needed to discover and evaluate places. The following describes the **MVP scope**, not a guarantee that every feature is already released.
 
-* Photos
-* Description
-* Address
-* Neighborhood
-* Price
-* Opening hours
-* Phone number
-* Website
-* Social media
-* Google Maps location
-* Available activities
+### 1. Discover Places
 
----
+Browse places by category and explore available activities. Each place has a dedicated page with the information visitors need to make a decision.
 
-### Transportation
+### 2. Search & Filters
 
-Help users understand how they can reach a place.
+Find options based on your plans:
 
-Information can include:
+- Category and neighborhood
+- Free or paid entry
+- Budget and price range
+- Solo, couple, friends, or family
+- Kid-friendly options
+- Indoor or outdoor activities
+- Ratings
 
-* Tramway
-* Bus
-* Taxi
-* Car
-* Parking
-* Walking distance
+**Example:** Find games and activities in Aïn Diab for four friends, with a maximum budget of **150 MAD per person**.
 
----
+### 3. Detailed Place Pages
 
-### Things to Know Before You Go
+Place pages can include:
 
-Practical information that can improve the visitor's experience.
+- Name, description, and photos
+- Address, neighborhood, and map location
+- Available activities
+- Entry fees, activity prices, and pricing details
+- Opening hours and contact information
+- Website and social media links
+- Suitability for different types of visitors
 
-Examples:
+### 4. Transportation & Accessibility Information
 
-* Reservation is recommended.
-* Parking is difficult after 8 PM.
-* The place gets crowded during weekends.
-* Cash only.
-* ID card required.
-* Children must be accompanied by an adult.
-* Bring socks for the activity.
+Help visitors understand how to reach a place, including available information about:
 
----
+- Tramway and bus access
+- Taxi or car access
+- Parking availability
+- Walking distance from nearby transport stops
 
-### Reviews & Comments
+### 5. Things to Know Before You Go
 
-Users can share their experience after visiting a place.
+Practical tips can make a visit smoother. Examples include:
 
-Reviews can include:
+- Reservations are recommended
+- Parking is difficult during busy hours
+- Weekends are usually crowded
+- Cash-only payment
+- Identification is required
+- Children must be accompanied by an adult
+- Specific equipment or clothing is needed
 
-* Rating
-* Experience
-* Recommendations
-* Useful tips
+### 6. Reviews & Comments
 
-Comments can also provide recent information such as:
+Registered users can share ratings, experiences, recommendations, and useful advice.
 
-> The price changed to 120 MAD.
+Comments can also highlight recent changes, for example:
 
-or:
+> The price has changed to 120 MAD.
 
-> I went there yesterday and the parking was full.
+> Parking was full when I visited yesterday.
 
----
+Visitor-submitted details should be treated as community reports until verified.
 
-### Good Deals
+### 7. Good Deals
 
-Discover offers and benefits available around Casablanca.
+Find offers that make outings more affordable, such as:
 
-Examples:
+- Student and group discounts
+- Birthday offers
+- Happy hours and free-entry days
+- Bank-card promotions
+- Promotional codes
+- Buy-one-get-one-free offers
 
-* Student discounts
-* Group discounts
-* Birthday offers
-* Happy hours
-* Free entrance days
-* Bank card offers
-* Promotional codes
-* Buy 1 Get 1 Free
+Offer conditions and validity dates should be clearly displayed when available.
 
----
+### 8. Favorites & Authentication
 
-### Favorites
+Users can create an account and save places they want to visit later.
 
-Registered users can save places they want to visit later.
+### 9. Admin Dashboard
 
----
+The admin area supports managing and maintaining platform content:
 
-## Admin Dashboard
+- Places, categories, and locations
+- Prices and opening hours
+- Transportation and parking details
+- Visitor tips and practical information
+- Good deals and promotional details
+- Reviews and comments
 
-The platform includes an administration area where places and content can be managed.
+**Initial content strategy:** Places will be added and verified manually by the administrator to establish a trustworthy starting catalog.
 
-The administrator can:
+### 10. Responsive Experience
 
-* Add places
-* Edit places
-* Delete places
-* Manage categories
-* Manage locations
-* Add prices
-* Add opening hours
-* Add transportation information
-* Add useful tips
-* Add good deals
-* Manage reviews
-* Manage comments
-
-The first places available on the platform will be manually added and verified by the administrator.
+The product is designed for mobile, tablet, and desktop, with particular attention to browsing and making decisions on a phone.
 
 ---
 
 ## Example User Journey
 
-A user wants to do something with three friends.
+Someone wants to go out with three friends in Casablanca:
 
-They choose:
+| Preference | Selection |
+| --- | --- |
+| Activity | Games |
+| Area | Aïn Diab |
+| Group | 4 friends |
+| Budget | Up to 150 MAD per person |
 
-* **Category:** Games
-* **Location:** Ain Diab
-* **Budget:** Maximum 150 MAD/person
-* **Group:** Friends
+LetsGoo displays matching options. After opening a place, the user can review photos, prices, hours, transport options, parking information, reviews, practical tips, and available deals.
 
-Casablanca Project shows matching activities.
+The goal is simple: **help the group make a confident choice before leaving home**.
 
-The user opens a place and can see:
+## How LetsGoo Is Different
 
-* Photos
-* Price
-* Opening hours
-* Location
-* Transportation
-* Parking information
-* Reviews
-* Things to know before going
-* Available deals
+LetsGoo is **not a replacement for Google Maps**. Maps services are great for locating a place and navigating to it. LetsGoo focuses on the decisions that come **before the visit**:
 
-The user now has enough information to decide whether the place is a good choice.
+- What can I actually do there?
+- Is it right for my budget and the people I'm going with?
+- What's the easiest way to get there?
+- What should I prepare or know in advance?
+- Are there any offers worth using?
 
----
-
-## What Makes Casablanca Project Different?
-
-Casablanca Project is not intended to replace Google Maps.
-
-Google Maps mainly answers:
-
-> **Where is this place?**
-
-Casablanca Project aims to answer:
-
-> **Should I go there?**
-
-> **What can I do there?**
-
-> **How much should I prepare?**
-
-> **Who can I go with?**
-
-> **How do I get there?**
-
-> **What should I know before going?**
-
-The focus is on the **complete experience before visiting a place**.
+**Our focus: place + activity + budget + people + transport + experience + deals.**
 
 ---
 
-## MVP
+## Locations & Languages
 
-The first version of the project will focus on the essential features:
+### Geographic Scope
 
-* Homepage
-* Places listing
-* Categories
-* Search
-* Filters
-* Place details
-* Prices
-* Opening hours
-* Transportation information
-* Things to know before going
-* Reviews
-* Comments
-* Good deals
-* Favorites
-* Authentication
-* Admin dashboard
-* Responsive design
+**Phase 1 — Casablanca:** Launch with carefully curated neighborhoods, places, activities, and deals in Casablanca, Morocco.
 
----
+**Future phases — More cities:** Extend the catalog to additional Moroccan cities, with a longer-term possibility of international destinations.
 
-## Future Ideas
+The **LetsGoo brand is city-independent**. Casablanca is the first launch market, not the limit of the product. The initial starter data and available listings are Casablanca-focused.
 
-Possible future features include:
-
-* Interactive map
-* Personalized recommendations
-* **Surprise Me** random activity
-* **What Should We Do?** activity generator
-* Day planner
-* Community lists
-* User photos
-* Events
-* Notifications
-* AI recommendations
-
----
-
-## Languages
+### Languages
 
 The platform is planned to support:
 
-* Arabic
-* French
-* English
+- **Arabic**
+- **French**
+- **English**
+
+Language availability may vary by development phase.
 
 ---
 
-## Project Scope
+## Roadmap
 
-The first version focuses exclusively on:
+### MVP — Foundation
 
-**📍 Casablanca, Morocco**
+- [ ] Homepage and place discovery
+- [ ] Categories, search, and filters
+- [ ] Detailed place pages
+- [ ] Pricing, opening hours, and transport information
+- [ ] Visitor tips and things to know before going
+- [ ] Reviews and comments
+- [ ] Good deals
+- [ ] Authentication and favorites
+- [ ] Admin content management
+- [ ] Responsive UI
 
-Other Moroccan cities may be added in future versions.
+> This checklist represents the target scope; update the checkboxes as features are completed.
+
+### Future Ideas
+
+- Interactive map and location-based discovery
+- Personalized recommendations
+- **Surprise Me:** Suggest a random activity
+- **What Should We Do?:** Generate outing ideas based on budget, group, and preferences
+- Day planner and multi-stop itineraries
+- Community-created lists and user photos
+- Event discovery
+- Notifications for relevant deals and activities
+- AI-assisted recommendations
+- Expansion to more cities
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Framework | [Next.js](https://nextjs.org/) |
+| Language | [TypeScript](https://www.typescriptlang.org/) |
+| Styling | [Tailwind CSS](https://tailwindcss.com/) |
+| UI components | [shadcn/ui](https://ui.shadcn.com/) |
+| Database | [Supabase](https://supabase.com/) (PostgreSQL) |
+| Authentication | Supabase Auth |
+| Image storage | Supabase Storage |
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js 20.9 or later**
+- npm
+- A [Supabase](https://supabase.com/) project
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Open `.env.local` and fill in the Supabase project URL and publishable key using the variable names defined in `.env.example`.
+
+> Never commit `.env.local`, secret keys, or service-role credentials to version control.
+
+### 3. Initialize the database
+
+In the **Supabase SQL Editor**, run these files in order:
+
+1. `supabase/migrations/20260912180000_initial_schema.sql`
+2. `supabase/seed.sql`
+
+The seed script provides the starter categories and Casablanca neighborhoods.
+
+### 4. Start the development server
+
+```bash
+npm run dev
+```
+
+Open **http://localhost:3000**.
+
+### 5. Set up an administrator
+
+Create a user in **Supabase Dashboard → Authentication → Users**.
+
+Then, in the **Supabase SQL Editor**, grant that existing user admin access:
+
+```sql
+insert into public.admins (user_id)
+select id
+from auth.users
+where email = 'you@example.com';
+```
+
+Replace `you@example.com` with the intended administrator's email address. Run this only from the trusted Supabase administration environment, not in client-side application code.
+
+## Available Commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Run the development server |
+| `npm run lint` | Run lint checks |
+| `npm run typecheck` | Check TypeScript types |
+| `npm run build` | Create a production build |
+| `npm run db:types` | Regenerate database types after linking Supabase |
+
+To link the local project to Supabase before regenerating types:
+
+```bash
+npx supabase link
+```
+
+## Content Quality & Trust
+
+Practical information can change. LetsGoo aims to make it clear what users can rely on:
+
+- Prioritize manually verified information for the initial catalog.
+- Distinguish platform-managed information from user-submitted reviews and comments.
+- Display deal conditions and expiration dates where available.
+- Keep prices, opening hours, and visitor tips up to date as content is reviewed.
+- Use appropriate authorization and Supabase Row Level Security policies for protected data and admin operations.
+
+These are product and engineering principles; information should still be confirmed with a venue when a visit depends on it.
 
 ---
 
 ## Vision
 
-The long-term vision is to create a trusted platform for discovering what to do in Casablanca based on:
+**LetsGoo helps people turn “What should we do?” into a plan.**
 
-**Place + Activity + Budget + People + Transport + Experience + Good Deals**
+Start with trusted local discovery in Casablanca. Grow into a platform that helps people explore new cities through practical information about **places, activities, budgets, companions, transport, experiences, and good deals**.
 
-Making it easier to explore the city without going somewhere unprepared.
-
----
-
-## Getting Started
-
-The app is built with Next.js, TypeScript, Tailwind CSS and shadcn/ui, and uses Supabase for the database, authentication and image storage.
-
-Requirements: Node.js 20.9 or later and a Supabase project.
-
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Copy `.env.example` to `.env.local` and fill in your Supabase project URL and publishable key.
-
-3. In the Supabase SQL editor, run `supabase/migrations/20260912180000_initial_schema.sql`, then `supabase/seed.sql` for the starter categories and neighborhoods.
-
-4. Start the app and open http://localhost:3000:
-
-   ```bash
-   npm run dev
-   ```
-
-5. To manage content, create a user (Supabase dashboard → Authentication → Users) and make it an admin from the SQL editor:
-
-   ```sql
-   insert into public.admins (user_id)
-   select id from auth.users where email = 'you@example.com';
-   ```
-
-Other commands: `npm run lint`, `npm run typecheck`, `npm run build`, and `npm run db:types` to regenerate the database types after linking the project with `npx supabase link`.
+**Less searching. More exploring.**
