@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { CatalogProvider } from "@/components/catalog-provider";
 import { Header, Footer } from "@/components/shell";
+import { MotionProvider } from "@/components/motion-provider";
 import "./globals.css";
+import "./discovery.css";
 export const metadata: Metadata = {
   title: "LetsGoo — Your next Casablanca outing",
   description:
@@ -15,14 +17,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <CatalogProvider>
-          <a className="skip-link" href="#main">
-            Skip to content
-          </a>
-          <Header />
-          {children}
-          <Footer />
-        </CatalogProvider>
+        <MotionProvider>
+          <CatalogProvider>
+            <a className="skip-link" href="#main">
+              Skip to content
+            </a>
+            <Header />
+            {children}
+            <Footer />
+          </CatalogProvider>
+        </MotionProvider>
       </body>
     </html>
   );

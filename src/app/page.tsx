@@ -1,12 +1,11 @@
 "use client";
-import Image from "next/image";
+import { CityHero } from "@/components/city-hero";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search,
-  ArrowUpRight,
   SlidersHorizontal,
-  Sun,
+  X,
   Trees,
   Landmark,
   Gamepad2,
@@ -97,59 +96,65 @@ export default function Home() {
     setKids(false);
     setRating("");
   };
+  const activeFilters = [
+    query
+      ? { id: "query", label: `Search: ${query}`, reset: () => setQuery("") }
+      : null,
+    category !== "All places"
+      ? {
+          id: "category",
+          label: category,
+          reset: () => setCategory("All places"),
+        }
+      : null,
+    area ? { id: "area", label: area, reset: () => setArea("") } : null,
+    group ? { id: "group", label: group, reset: () => setGroup("") } : null,
+    budget
+      ? {
+          id: "budget",
+          label: Number(budget) === 0 ? "Free entry" : `Up to ${budget} MAD`,
+          reset: () => setBudget(""),
+        }
+      : null,
+    entry
+      ? {
+          id: "entry",
+          label: entry === "free" ? "Free entry only" : "Paid entry only",
+          reset: () => setEntry(""),
+        }
+      : null,
+    setting
+      ? {
+          id: "setting",
+          label: setting === "outdoor" ? "Outdoor setting" : "Indoor setting",
+          reset: () => setSetting(""),
+        }
+      : null,
+    kids
+      ? { id: "kids", label: "Kid-friendly", reset: () => setKids(false) }
+      : null,
+    rating
+      ? { id: "rating", label: `${rating}+ stars`, reset: () => setRating("") }
+      : null,
+  ].filter(
+    (f): f is { id: string; label: string; reset: () => void } => f !== null,
+  );
   return (
-    <main id="main">
-      <section className="hero">
-        <div className="hero-copy">
-          <h1>
-            Your city.
-            <br />A little more
-            <br />
-            <em>possibility.</em>
-          </h1>
-          <p>
-            New corners. Good company. Plans worth making.
-            <br className="desktop-break" /> Find your next thing to do in
-            Casablanca.
-          </p>
-          <a className="hero-cta" href="#discover">
-            Let’s find your next outing <ArrowUpRight size={20} />
-          </a>
-          <div className="hero-note">
-            <Sun size={18} />
-            <span>Big plans or no plans. There’s a place for you.</span>
-          </div>
-        </div>
-        <div className="hero-photo">
-          <Image
-            unoptimized
-            width={1200}
-            height={800}
-            src="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=1400&q=85"
-            alt="Sunlit Moroccan architecture and courtyard"
-            fetchPriority="high"
-          />
-          <div className="photo-caption">
-            <span>
-              <MapPin size={15} /> A little Moroccan inspiration
-            </span>
-            <span>
-              Start in Casablanca <ArrowUpRight size={17} />
-            </span>
-          </div>
-          <div className="photo-stamp">
-            Less scrolling.
-            <br />
-            <strong>More going.</strong>
-            <ArrowUpRight size={27} />
-          </div>
-        </div>
-      </section>
+    <main id="main" className="discovery-page">
+      <CityHero
+        onExplore={(nextCategory) => {
+          clear();
+          setCategory(nextCategory);
+        }}
+      />
       <section id="discover" className="discover">
         <div className="section-heading">
           <div>
-            <h2>What sounds good today?</h2>
-            <p>A little adventure is closer than you think.</p>
+            <h2>Follow your kind of curious.</h2>
+            <p>
+              From a little sea air to something completely new. What are you in
+              the mood for?
+            </p>
           </div>
           <span className="launch-city">
             <MapPin size={16} /> Exploring Casablanca
@@ -191,13 +196,14 @@ export default function Home() {
           <button
             className={`filter-button ${filters ? "selected" : ""}`}
             aria-expanded={filters}
+            aria-controls="discovery-filters"
             onClick={() => setFilters(!filters)}
           >
             <SlidersHorizontal size={19} /> Filters
           </button>
         </div>
         {filters && (
-          <div className="extra-filters">
+          <div id="discovery-filters" className="extra-filters">
             <label>
               Entry
               <select value={entry} onChange={(e) => setEntry(e.target.value)}>
@@ -254,7 +260,11 @@ export default function Home() {
             </Button>
           </div>
         )}
-        <div className="categories" aria-label="Place categories">
+        <div
+          className="categories"
+          aria-label="Place categories"
+          data-lenis-prevent-horizontal
+        >
           {Array.from(
             new Set([
               ...categories,
@@ -275,10 +285,27 @@ export default function Home() {
             );
           })}
         </div>
+        {activeFilters.length > 0 && (
+          <div className="active-filters" aria-label="Active filters">
+            {activeFilters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={filter.reset}
+                aria-label={`Remove ${filter.label} filter`}
+              >
+                {filter.label}
+                <X size={13} />
+              </button>
+            ))}
+            <button className="reset-all" onClick={clear}>
+              Clear all
+            </button>
+          </div>
+        )}
         <div className="results-heading">
           <h3>
             {category === "All places" ? "Find your kind of day" : category}
-            <span>
+            <span role="status" aria-live="polite" aria-atomic="true">
               {filtered.length} {filtered.length === 1 ? "place" : "places"}
             </span>
           </h3>

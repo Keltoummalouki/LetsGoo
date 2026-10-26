@@ -5,7 +5,15 @@ import { Heart, MapPin, ArrowUpRight, Star } from "lucide-react";
 import type { Place } from "@/lib/data";
 import { useCatalog } from "./catalog-provider";
 export function PlaceCard({ place }: { place: Place }) {
-  const { saved, toggleSave, reviews, demo } = useCatalog();
+  const {
+    saved,
+    toggleSave,
+    reviews,
+    demo,
+    pendingSaves,
+    authLoading,
+    savedLoading,
+  } = useCatalog();
   const ratings = reviews.filter((r) => r.place_id === place.id);
   return (
     <article className="place-card">
@@ -28,6 +36,10 @@ export function PlaceCard({ place }: { place: Place }) {
           className={`save-button ${saved.includes(place.id) ? "is-saved" : ""}`}
           aria-label={`${saved.includes(place.id) ? "Unsave" : "Save"} ${place.name}`}
           aria-pressed={saved.includes(place.id)}
+          disabled={
+            pendingSaves.includes(place.id) || authLoading || savedLoading
+          }
+          aria-busy={pendingSaves.includes(place.id)}
           onClick={() => void toggleSave(place.id)}
         >
           <Heart

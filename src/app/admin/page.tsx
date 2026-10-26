@@ -4,13 +4,13 @@ import Link from "next/link";
 import { Plus, Pencil, Trash2, Upload } from "lucide-react";
 import { useCatalog } from "@/components/catalog-provider";
 import { supabase } from "@/lib/supabase";
-import { categories, neighborhoods, type Place } from "@/lib/data";
+import type { Place } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 const blank: Omit<Place, "id"> = {
   slug: "",
   name: "",
-  category: "Outdoors",
-  neighborhood: "Aïn Diab",
+  category: "",
+  neighborhood: "",
   description: "",
   price: 0,
   image: "",
@@ -29,19 +29,31 @@ const blank: Omit<Place, "id"> = {
   published: false,
 };
 export default function Admin() {
-  const { admin, user, places, deals, reviews, reload, setNotice } =
-    useCatalog();
+  const {
+    admin,
+    user,
+    authLoading,
+    accountError,
+    retryAccount,
+    places,
+    deals,
+    reviews,
+    reload,
+    setNotice,
+  } = useCatalog();
   const [tab, setTab] = useState("places"),
     [editing, setEditing] = useState(false),
     [id, setId] = useState<string | null>(null),
     [form, setForm] = useState(blank),
     [busy, setBusy] = useState(false),
     [remove, setRemove] = useState<string | null>(null),
-    [cats, setCats] = useState(categories.slice(1)),
-    [areas, setAreas] = useState(neighborhoods),
+    [cats, setCats] = useState<string[]>([]),
+    [areas, setAreas] = useState<string[]>([]),
     [taxonomy, setTaxonomy] = useState(""),
     [kind, setKind] = useState("categories");
   const [taxonomyOriginal, setTaxonomyOriginal] = useState<string | null>(null);
+  const [taxonomyOwner, setTaxonomyOwner] = useState<string | null>(null),
+    [taxonomyError, setTaxonomyError] = useState("");
   const [offer, setOffer] = useState({
       place_id: "",
       title: "",
@@ -51,16 +63,48 @@ export default function Admin() {
     }),
     [dealId, setDealId] = useState<string | null>(null);
   useEffect(() => {
-    if (!admin || !supabase) return;
+    if (!admin || !user || !supabase) return;
+    let active = true;
     const client = supabase;
     void Promise.all([
-      client.from("categories").select("name"),
-      client.from("neighborhoods").select("name"),
-    ]).then(([c, n]) => {
-      if (c.data) setCats(c.data.map((x) => x.name));
-      if (n.data) setAreas(n.data.map((x) => x.name));
-    });
-  }, [admin]);
+      client.from("categories").select("name").order("name"),
+      client.from("neighborhoods").select("name").order("name"),
+    ])
+      .then(([c, n]) => {
+        if (!active) return;
+        if (c.error || n.error) {
+          setTaxonomyError(
+            "Could not load categories and neighborhoods. Refresh this page to try again.",
+          );
+          return;
+        }
+        setCats(c.data.map((x) => x.name));
+        setAreas(n.data.map((x) => x.name));
+        setTaxonomyError("");
+      })
+      .catch(() => {
+        if (active)
+          setTaxonomyError(
+            "Could not load categories and neighborhoods. Refresh this page to try again.",
+          );
+      })
+      .finally(() => {
+        if (active) setTaxonomyOwner(user.id);
+      });
+    return () => {
+      active = false;
+    };
+  }, [admin, user]);
+  const taxonomyLoading = taxonomyOwner !== user?.id;
+  const canCreatePlace =
+    !taxonomyLoading && !taxonomyError && cats.length > 0 && areas.length > 0;
+  if (authLoading)
+    return (
+      <main id="main" className="page empty-state">
+        <h1>Catalog administration</h1>
+        <p role="status">Checking your administrator access…</p>
+      </main>
+    );
   if (!user)
     return (
       <main id="main" className="page empty-state">
@@ -69,6 +113,14 @@ export default function Admin() {
         <Link href="/account" className="button button-primary">
           Sign in
         </Link>
+      </main>
+    );
+  if (!admin && accountError)
+    return (
+      <main id="main" className="page empty-state">
+        <h1>Could not check administrator access</h1>
+        <p role="alert">{accountError}</p>
+        <Button onClick={() => void retryAccount()}>Try again</Button>
       </main>
     );
   if (!admin)
@@ -88,6 +140,10 @@ export default function Admin() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase) return;
+    if (!cats.includes(form.category) || !areas.includes(form.neighborhood)) {
+      setNotice("Choose an available category and neighborhood before saving.");
+      return;
+    }
     setBusy(true);
     try {
       const { error } = id
@@ -224,14 +280,29 @@ export default function Admin() {
           {!editing ? (
             <>
               <Button
+                disabled={!canCreatePlace}
                 onClick={() => {
-                  setForm(blank);
+                  setForm({
+                    ...blank,
+                    category: cats[0],
+                    neighborhood: areas[0],
+                  });
                   setId(null);
                   setEditing(true);
                 }}
               >
                 <Plus size={17} /> Add place
               </Button>
+              {taxonomyLoading ? (
+                <p role="status">Loading categories and neighborhoods…</p>
+              ) : taxonomyError ? (
+                <p role="alert">{taxonomyError}</p>
+              ) : !canCreatePlace ? (
+                <p>
+                  Add at least one category and one neighborhood in “categories
+                  &amp; locations” before creating a place.
+                </p>
+              ) : null}
               <div className="admin-list">
                 {places
                   .filter((p) => !p.id.startsWith("demo"))
@@ -246,6 +317,7 @@ export default function Admin() {
                       </div>
                       <Button
                         variant="outline"
+                        disabled={taxonomyLoading || !!taxonomyError}
                         onClick={() => {
                           const { id: placeId, ...fields } = p;
                           setId(placeId);

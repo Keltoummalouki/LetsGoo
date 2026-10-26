@@ -4,7 +4,16 @@ import { Heart } from "lucide-react";
 import { useCatalog } from "@/components/catalog-provider";
 import { PlaceCard } from "@/components/place-card";
 export default function Saved() {
-  const { places, saved, user, loading } = useCatalog();
+  const {
+    places,
+    saved,
+    user,
+    loading,
+    authLoading,
+    savedLoading,
+    accountError,
+    retryAccount,
+  } = useCatalog();
   const list = places.filter((p) => saved.includes(p.id) && p.published);
   return (
     <main id="main" className="page">
@@ -12,8 +21,19 @@ export default function Saved() {
       <p className="page-intro">
         A little shortlist of places you’d love to go.
       </p>
-      {loading ? (
+      {loading || authLoading || savedLoading ? (
         <p>Loading your shortlist…</p>
+      ) : accountError ? (
+        <div className="empty-state">
+          <h2>Your shortlist couldn’t load.</h2>
+          <p role="status">{accountError}</p>
+          <button
+            className="button button-primary"
+            onClick={() => void retryAccount()}
+          >
+            Try again
+          </button>
+        </div>
       ) : list.length ? (
         <div className="place-grid">
           {list.map((p) => (

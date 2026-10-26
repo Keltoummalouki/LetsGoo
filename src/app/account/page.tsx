@@ -5,7 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { useCatalog } from "@/components/catalog-provider";
 import { Button } from "@/components/ui/button";
 export default function Account() {
-  const { user, admin, setNotice } = useCatalog();
+  const { user, admin, setNotice, authLoading, accountError, retryAccount } =
+    useCatalog();
   const [mode, setMode] = useState<"signin" | "signup">("signin"),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
@@ -55,10 +56,20 @@ export default function Account() {
         </p>
       </div>
       <section className="account-panel">
-        {user ? (
+        {authLoading ? (
+          <p role="status">Loading your account…</p>
+        ) : user ? (
           <>
             <h2>You’re in.</h2>
             <p className="wrap-text">{user.email}</p>
+            {accountError && (
+              <div>
+                <p role="status">{accountError}</p>
+                <Button variant="outline" onClick={() => void retryAccount()}>
+                  Try again
+                </Button>
+              </div>
+            )}
             <Link className="button button-primary" href="/saved">
               See your saved places
             </Link>
@@ -110,7 +121,7 @@ export default function Account() {
                   autoComplete={
                     mode === "signin" ? "current-password" : "new-password"
                   }
-                  minLength={8}
+                  minLength={mode === "signup" ? 8 : undefined}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

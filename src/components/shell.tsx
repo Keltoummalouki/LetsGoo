@@ -6,7 +6,8 @@ import { useState } from "react";
 import { useCatalog } from "./catalog-provider";
 export function Header() {
   const path = usePathname();
-  const { saved, notice, setNotice, admin } = useCatalog();
+  const { saved, notice, setNotice, admin, catalogError, reload, loading } =
+    useCatalog();
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -61,6 +62,18 @@ export function Header() {
           </Link>
         </nav>
       </header>
+      {catalogError && (
+        <div className="catalog-status" role="status">
+          <span>{catalogError}</span>
+          <button
+            className="button button-ghost"
+            disabled={loading}
+            onClick={() => void reload()}
+          >
+            Try again
+          </button>
+        </div>
+      )}
       {notice && (
         <div className="notice" role="status">
           <span>{notice}</span>

@@ -256,7 +256,7 @@ Language availability may vary by development phase.
 
 ### Prerequisites
 
-- **Node.js 20.9 or later**
+- **Node.js 24** (tested with 24.21.0)
 - npm
 - A [Supabase](https://supabase.com/) project
 
@@ -317,7 +317,9 @@ Replace `you@example.com` with the intended administrator's email address. Run t
 | `npm run dev` | Run the development server |
 | `npm run lint` | Run lint checks |
 | `npm run typecheck` | Check TypeScript types |
+| `npm test` | Run offline account and database-check regressions |
 | `npm run build` | Create a production build |
+| `npm run db:check` | Check live catalog readiness with anonymous read-only requests |
 | `npm run db:types` | Regenerate database types after linking Supabase |
 
 To link the local project to Supabase before regenerating types:

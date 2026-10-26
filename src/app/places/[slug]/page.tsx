@@ -16,7 +16,81 @@ import {
 import { useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
 import { supabase } from "@/lib/supabase";
+import type { Review } from "@/lib/data";
 import { Button } from "@/components/ui/button";
+function ReviewEditor({
+  placeId,
+  userId,
+  existing,
+}: {
+  placeId: string;
+  userId: string;
+  existing: Review | undefined;
+}) {
+  const { reload, setNotice } = useCatalog();
+  const [body, setBody] = useState(existing?.body ?? ""),
+    [rating, setRating] = useState(String(existing?.rating ?? 5)),
+    [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || busy) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("reviews").upsert(
+        {
+          ...(existing ? { id: existing.id } : {}),
+          place_id: placeId,
+          user_id: userId,
+          rating: Number(rating),
+          body,
+        },
+        { onConflict: "user_id,place_id" },
+      );
+      if (error) throw error;
+      await reload();
+      setNotice("Your review was published as a community report.");
+    } catch (e) {
+      setNotice(
+        e instanceof Error
+          ? e.message
+          : "Could not publish your review. Try again.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form className="stack-form" onSubmit={submit}>
+      <h3>{existing ? "Update your review" : "How was your visit?"}</h3>
+      <label>
+        Rating
+        <select value={rating} onChange={(e) => setRating(e.target.value)}>
+          {[5, 4, 3, 2, 1].map((n) => (
+            <option key={n} value={n}>
+              {n} stars
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Your experience
+        <textarea
+          required
+          minLength={10}
+          maxLength={2000}
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="What should the next visitor know?"
+        />
+      </label>
+      <Button disabled={busy}>
+        {busy ? "Publishing…" : existing ? "Update review" : "Publish review"}
+      </Button>
+    </form>
+  );
+}
 export default function PlacePage({
   params,
 }: {
@@ -31,14 +105,14 @@ export default function PlacePage({
     demo,
     saved,
     toggleSave,
+    pendingSaves,
+    authLoading,
+    savedLoading,
     user,
     reload,
     setNotice,
   } = useCatalog();
   const place = places.find((p) => p.slug === slug && p.published);
-  const [body, setBody] = useState(""),
-    [rating, setRating] = useState("5"),
-    [busy, setBusy] = useState(false);
   if (loading)
     return (
       <main id="main" className="page">
@@ -62,35 +136,6 @@ export default function PlacePage({
           timeZone: "Africa/Casablanca",
         }),
   );
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!supabase || !user || !place) return;
-    setBusy(true);
-    try {
-      const { error } = await supabase.from("reviews").upsert(
-        {
-          ...(existing ? { id: existing.id } : {}),
-          place_id: place.id,
-          user_id: user.id,
-          rating: Number(rating),
-          body,
-        },
-        { onConflict: "user_id,place_id" },
-      );
-      if (error) throw error;
-      setBody("");
-      await reload();
-      setNotice("Your review was published as a community report.");
-    } catch (e) {
-      setNotice(
-        e instanceof Error
-          ? e.message
-          : "Could not publish your review. Try again.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
   async function removeReview(id: string) {
     if (!supabase) return;
     const { error } = await supabase.from("reviews").delete().eq("id", id);
@@ -109,7 +154,14 @@ export default function PlacePage({
           </p>
           <h1>{place.name}</h1>
         </div>
-        <Button variant="outline" onClick={() => void toggleSave(place.id)}>
+        <Button
+          variant="outline"
+          onClick={() => void toggleSave(place.id)}
+          disabled={
+            pendingSaves.includes(place.id) || authLoading || savedLoading
+          }
+          aria-busy={pendingSaves.includes(place.id)}
+        >
           <Heart
             size={17}
             fill={saved.includes(place.id) ? "currentColor" : "none"}
@@ -213,42 +265,12 @@ export default function PlacePage({
               <p>No reviews yet. Be the first to share something useful.</p>
             )}
             {!demo && user ? (
-              <form className="stack-form" onSubmit={submit}>
-                <h3>
-                  {existing ? "Update your review" : "How was your visit?"}
-                </h3>
-                <label>
-                  Rating
-                  <select
-                    value={rating}
-                    onChange={(e) => setRating(e.target.value)}
-                  >
-                    {[5, 4, 3, 2, 1].map((n) => (
-                      <option key={n} value={n}>
-                        {n} stars
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Your experience
-                  <textarea
-                    required
-                    minLength={10}
-                    maxLength={2000}
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="What should the next visitor know?"
-                  />
-                </label>
-                <Button disabled={busy}>
-                  {busy
-                    ? "Publishing…"
-                    : existing
-                      ? "Update review"
-                      : "Publish review"}
-                </Button>
-              </form>
+              <ReviewEditor
+                key={`${place.id}:${user.id}:${existing?.id ?? "new"}`}
+                placeId={place.id}
+                userId={user.id}
+                existing={existing}
+              />
             ) : (
               <p className="muted">
                 {demo ? (
