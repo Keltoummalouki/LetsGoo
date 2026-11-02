@@ -1,7 +1,12 @@
 "use client";
+import { Dropdown } from "@/components/dropdown";
+import { DatePicker } from "@/components/date-picker";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
+import { Plus, Pencil, Trash2, Upload, Compass, MapPin, Users, MessageSquare, Shapes, Ticket } from "lucide-react";
+import { AdminMembers } from "@/components/admin-members";
+import "./dashboard.css";
 import { useCatalog } from "@/components/catalog-provider";
 import { supabase } from "@/lib/supabase";
 import type { Place } from "@/lib/data";
@@ -41,7 +46,7 @@ export default function Admin() {
     reload,
     setNotice,
   } = useCatalog();
-  const [tab, setTab] = useState("places"),
+  const [tab, setTab] = useState("overview"),
     [editing, setEditing] = useState(false),
     [id, setId] = useState<string | null>(null),
     [form, setForm] = useState(blank),
@@ -52,6 +57,7 @@ export default function Admin() {
     [taxonomy, setTaxonomy] = useState(""),
     [kind, setKind] = useState("categories");
   const [taxonomyOriginal, setTaxonomyOriginal] = useState<string | null>(null);
+  const [reviewPlace, setReviewPlace] = useState("");
   const [taxonomyOwner, setTaxonomyOwner] = useState<string | null>(null),
     [taxonomyError, setTaxonomyError] = useState("");
   const [offer, setOffer] = useState({
@@ -198,6 +204,10 @@ export default function Admin() {
   async function saveDeal(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase) return;
+    if (!offer.expires_at) {
+      setNotice("Choose an expiration date before saving the offer.");
+      return;
+    }
     setBusy(true);
     const { error } = dealId
       ? await supabase.from("deals").update(offer).eq("id", dealId)
@@ -256,25 +266,49 @@ export default function Admin() {
     setRemove(null);
     setNotice("Catalog item removed.");
   }
+  const catalog = places.filter(p => !p.id.startsWith("demo"));
+  const published = catalog.filter(p => p.published).length;
+  const visibleReviews = reviews.filter(r => !reviewPlace || r.place_id === reviewPlace);
+  const sections = [
+    ["overview", "Overview", Compass],
+    ["places", "Places", MapPin], ["reviews", "Reviews", MessageSquare], ["users", "Users", Users],
+    ["categories & locations", "Categories & locations", Shapes], ["deals", "Deals", Ticket],
+  ] as const;
   return (
-    <main id="main" className="page admin-page">
-      <div className="section-heading">
-        <div>
-          <h1>Keep Casa worth exploring.</h1>
-          <p>Manage the details people rely on before they go.</p>
+    <main id="main" className="page admin-page city-desk">
+      <aside className="desk-rail">
+      <div className="desk-brand"><Compass size={28}/> City Desk</div>
+      <nav className="desk-nav" aria-label="Dashboard sections">
+        {sections.map(([key,label,Icon]) => <button key={key} aria-current={tab === key ? "page" : undefined}
+          onClick={() => { setTab(key); setRemove(null); if(key === "reviews") setReviewPlace(""); }}>
+          <Icon size={17}/>{label}</button>)}
+      </nav>
+      <Link href="/" className="desk-return">← Back to discovery</Link>
+      </aside>
+      <div className="desk-work">
+      <header className="desk-title"><div><small>LETSGOO &nbsp; / &nbsp; ADMINISTRATION</small>
+        <h1>{tab === "overview" ? "City overview" : sections.find(([key]) => key === tab)?.[1]}</h1></div>
+        <span className="desk-location"><MapPin size={14}/> Casablanca</span></header>
+      {tab === "overview" && <>
+        <div className="desk-metrics">
+          {([["Places",catalog.length,"places",MapPin],["Reviews",reviews.length,"reviews",MessageSquare],["Categories",taxonomyLoading || taxonomyError ? "—" : cats.length,"categories & locations",Shapes]] as const).map(([label,count,target,Icon]) =>
+            <button key={target} onClick={() => setTab(target)}><Icon size={20}/><span>{label}</span><strong>{count}</strong><i aria-hidden="true">↗</i></button>)}
         </div>
-      </div>
-      <div className="categories">
-        {["places", "deals", "reviews", "categories & locations"].map((t) => (
-          <button
-            className={tab === t ? "category active" : "category"}
-            onClick={() => setTab(t)}
-            key={t}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+        <div className="desk-overview">
+          <section className="desk-panel"><h2>Place directory</h2><p>Open a listing to read its visitor reviews.</p>
+            {catalog.map(p => <button className="desk-place" key={p.id} onClick={() => {setReviewPlace(p.id); setTab("reviews");}}>
+              <Image unoptimized width={52} height={52} src={p.image || "/placeholder.svg"} alt="" onError={e => {e.currentTarget.src="/placeholder.svg";}}/>
+              <span><strong>{p.name}</strong><small>{p.neighborhood}</small></span><em>{p.published ? "Published" : "Draft"}</em></button>)}
+            {!catalog.length && <p>Your first place will appear here.</p>}
+          </section>
+          <section className="desk-panel desk-publication"><h2>Publication</h2>
+            <div className="desk-ring" style={{background: `conic-gradient(#397b69 ${catalog.length ? published/catalog.length*100 : 0}%, #f1dcc3 0)`}}>
+              <strong>{catalog.length ? Math.round(published/catalog.length*100) : 0}%</strong></div>
+            <p>of places published</p><div className="desk-tally"><span>Published</span><b>{published}</b></div><div className="desk-tally"><span>Drafts</span><b>{catalog.length-published}</b></div>
+          </section>
+        </div></>}
+      <div className={tab === "overview" ? undefined : "desk-panel desk-editor"}>
+      {tab === "users" && <AdminMembers key={user.id}/>}
       {tab === "places" && (
         <>
           {!editing ? (
@@ -315,6 +349,9 @@ export default function Admin() {
                           {p.published ? "Published" : "Draft"} · {p.price} MAD
                         </p>
                       </div>
+                      <Button variant="ghost" onClick={() => { setTab("reviews"); setReviewPlace(p.id); setRemove(null); }}>
+                        <MessageSquare size={15}/> {reviews.filter(r => r.place_id === p.id).length} reviews
+                      </Button>
                       <Button
                         variant="outline"
                         disabled={taxonomyLoading || !!taxonomyError}
@@ -387,25 +424,25 @@ export default function Admin() {
                 ))}
                 <label>
                   Category
-                  <select
+                  <Dropdown
                     value={form.category}
                     onChange={(e) => update("category", e.target.value)}
                   >
                     {cats.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
-                  </select>
+                  </Dropdown>
                 </label>
                 <label>
                   Neighborhood
-                  <select
+                  <Dropdown
                     value={form.neighborhood}
                     onChange={(e) => update("neighborhood", e.target.value)}
                   >
                     {areas.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
-                  </select>
+                  </Dropdown>
                 </label>
                 <label>
                   Price in MAD per person
@@ -427,7 +464,7 @@ export default function Admin() {
                   />
                 </label>
                 <label>
-                  <Upload size={16} /> Upload a photo (max 5 MB)
+                  <span><Upload size={16} /> Cover photo · up to 5 MB</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -516,7 +553,7 @@ export default function Admin() {
             <div className="form-grid">
               <label>
                 Place
-                <select
+                <Dropdown
                   required
                   value={offer.place_id}
                   onChange={(e) =>
@@ -531,16 +568,16 @@ export default function Admin() {
                         {p.name}
                       </option>
                     ))}
-                </select>
+                </Dropdown>
               </label>
               {(
-                ["title", "description", "conditions", "expires_at"] as const
+                ["title", "description", "conditions"] as const
               ).map((k) => (
                 <label key={k}>
                   {k.replace("_", " ")}
                   <input
                     required
-                    type={k === "expires_at" ? "date" : "text"}
+                    type="text"
                     value={offer[k]}
                     onChange={(e) =>
                       setOffer({ ...offer, [k]: e.target.value })
@@ -549,6 +586,7 @@ export default function Admin() {
                 </label>
               ))}
             </div>
+            <DatePicker label="Expiration date" value={offer.expires_at} onChange={expires_at => setOffer(current => ({ ...current, expires_at }))}/>
             <Button disabled={busy}>{busy ? "Saving…" : "Save offer"}</Button>
           </form>
           <div className="admin-list">
@@ -594,8 +632,11 @@ export default function Admin() {
       )}
       {tab === "reviews" && (
         <div className="admin-list">
-          {reviews.length === 0 && <p>No reviews to moderate yet.</p>}
-          {reviews.map((r) => (
+          <label className="desk-filter">Reviews for <Dropdown value={reviewPlace} onChange={e => {setReviewPlace(e.target.value); setRemove(null);}}>
+            <option value="">All places</option>{catalog.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </Dropdown></label>
+          {visibleReviews.length === 0 && <p>No reviews for {reviewPlace ? "this place" : "the catalog"} yet.</p>}
+          {visibleReviews.map((r) => (
             <article key={r.id}>
               <div>
                 <h3>
@@ -627,7 +668,7 @@ export default function Admin() {
             <h2>Organize the catalog</h2>
             <label>
               Type
-              <select
+              <Dropdown
                 value={kind}
                 onChange={(e) => {
                   setKind(e.target.value);
@@ -638,7 +679,7 @@ export default function Admin() {
               >
                 <option value="categories">Category</option>
                 <option value="neighborhoods">Neighborhood</option>
-              </select>
+              </Dropdown>
             </label>
             <label>
               Name
@@ -701,6 +742,7 @@ export default function Admin() {
           </div>
         </>
       )}
+      </div></div>
     </main>
   );
 }

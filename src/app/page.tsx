@@ -1,4 +1,5 @@
 "use client";
+import { Dropdown } from "@/components/dropdown";
 import { CityHero } from "@/components/city-hero";
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -172,7 +173,7 @@ export default function Home() {
           </div>
           <label className="search-select">
             <span>Neighborhood</span>
-            <select value={area} onChange={(e) => setArea(e.target.value)}>
+            <Dropdown value={area} onChange={(e) => setArea(e.target.value)}>
               <option value="">Anywhere in Casa</option>
               {Array.from(
                 new Set([
@@ -182,16 +183,16 @@ export default function Home() {
               ).map((n) => (
                 <option key={n}>{n}</option>
               ))}
-            </select>
+            </Dropdown>
           </label>
           <label className="search-select">
             <span>Who’s coming?</span>
-            <select value={group} onChange={(e) => setGroup(e.target.value)}>
+            <Dropdown value={group} onChange={(e) => setGroup(e.target.value)}>
               <option value="">Everyone’s welcome</option>
               {["Solo", "Couple", "Friends", "Family"].map((g) => (
                 <option key={g}>{g}</option>
               ))}
-            </select>
+            </Dropdown>
           </label>
           <button
             className={`filter-button ${filters ? "selected" : ""}`}
@@ -206,15 +207,15 @@ export default function Home() {
           <div id="discovery-filters" className="extra-filters">
             <label>
               Entry
-              <select value={entry} onChange={(e) => setEntry(e.target.value)}>
+              <Dropdown value={entry} onChange={(e) => setEntry(e.target.value)}>
                 <option value="">Free & paid</option>
                 <option value="free">Free entry</option>
                 <option value="paid">Paid entry</option>
-              </select>
+              </Dropdown>
             </label>
             <label>
               Budget per person
-              <select
+              <Dropdown
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
               >
@@ -223,29 +224,29 @@ export default function Home() {
                 <option value="50">Up to 50 MAD</option>
                 <option value="150">Up to 150 MAD</option>
                 <option value="300">Up to 300 MAD</option>
-              </select>
+              </Dropdown>
             </label>
             <label>
               Setting
-              <select
+              <Dropdown
                 value={setting}
                 onChange={(e) => setSetting(e.target.value)}
               >
                 <option value="">Indoor & outdoor</option>
                 <option value="indoor">Indoor</option>
                 <option value="outdoor">Outdoor</option>
-              </select>
+              </Dropdown>
             </label>
             <label>
               Visitor rating
-              <select
+              <Dropdown
                 value={rating}
                 onChange={(e) => setRating(e.target.value)}
               >
                 <option value="">All ratings</option>
                 <option value="4">4 stars and up</option>
                 <option value="3">3 stars and up</option>
-              </select>
+              </Dropdown>
             </label>
             <label className="checkbox-label">
               <input
@@ -311,11 +312,11 @@ export default function Home() {
           </h3>
           <label>
             Sort by{" "}
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+            <Dropdown value={sort} onChange={(e) => setSort(e.target.value)}>
               <option value="recommended">Discovery order</option>
               <option value="price">Price: low to high</option>
               <option value="name">Name: A–Z</option>
-            </select>
+            </Dropdown>
           </label>
         </div>
         {demo && (

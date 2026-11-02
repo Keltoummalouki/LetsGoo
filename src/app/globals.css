@@ -447,9 +447,8 @@ main {
 .categories {
   display: flex;
   gap: 10px;
-  overflow-x: auto;
+  flex-wrap: wrap;
   padding: 24px 0 25px;
-  scrollbar-width: thin;
 }
 .category {
   display: flex;

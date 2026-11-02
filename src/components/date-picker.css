@@ -1,0 +1,13 @@
+.date-field { min-width: 0; display: grid; gap: 6px; align-content: start; }
+.date-trigger { width: 100%; min-height: 46px; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #fffefa; border: 1px solid var(--border); border-radius: 7px; }
+.date-trigger[aria-expanded=true] { border-color: var(--primary); }
+.date-calendar { width: min(100%, 320px); padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: #fffdf6; box-shadow: 0 6px 18px #153f3210; }
+.date-calendar header,.date-calendar footer { display: flex; justify-content: space-between; align-items: center; }
+.date-calendar header button,.date-calendar footer button { padding: 8px; border-radius: 6px; }
+.date-calendar footer { border-top: 1px solid var(--border); margin-top: 8px; font-size: 13px; }
+.date-grid { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); text-align: center; }
+.date-grid small { padding: 7px 0; color: #506559; }
+.date-grid button { min-height: 36px; border-radius: 7px; font-size: 14px; }
+.date-calendar button:hover { background: #e5eee3; }
+.date-grid button[aria-current=date] { text-decoration: underline; text-underline-offset: 4px; }
+.date-grid button[aria-pressed=true] { background: var(--primary); color: white; }

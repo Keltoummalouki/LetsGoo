@@ -1,0 +1,48 @@
+.dropdown {
+  max-width: 100%;
+  min-width: 0;
+  color: var(--foreground);
+  font: inherit;
+}
+
+@supports (appearance: base-select) {
+  .dropdown,
+  .dropdown::picker(select) {
+    appearance: base-select;
+  }
+
+  .dropdown::picker-icon {
+    color: var(--primary);
+  }
+
+  .dropdown::picker(select) {
+    margin-block: 4px;
+    padding: 4px;
+    max-height: min(20rem, 50dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    color: var(--foreground);
+    background: #fffef9;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px #173e321f;
+  }
+
+  .dropdown option {
+    min-height: 42px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font: inherit;
+    white-space: normal;
+  }
+
+  .dropdown option:checked {
+    background: #e5eee6;
+    color: var(--primary);
+  }
+
+  .dropdown option:is(:hover, :focus-visible) {
+    background: var(--primary);
+    color: white;
+  }
+}

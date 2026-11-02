@@ -1,4 +1,5 @@
 "use client";
+import { Dropdown } from "@/components/dropdown";
 import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
@@ -66,13 +67,13 @@ function ReviewEditor({
       <h3>{existing ? "Update your review" : "How was your visit?"}</h3>
       <label>
         Rating
-        <select value={rating} onChange={(e) => setRating(e.target.value)}>
+        <Dropdown value={rating} onChange={(e) => setRating(e.target.value)}>
           {[5, 4, 3, 2, 1].map((n) => (
             <option key={n} value={n}>
               {n} stars
             </option>
           ))}
-        </select>
+        </Dropdown>
       </label>
       <label>
         Your experience
