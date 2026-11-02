@@ -1,5 +1,7 @@
 "use client";
-import { Dropdown } from "@/components/dropdown";
+import { availableToday, scheduleText } from "@/lib/deal-schedule";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
+import { Trash2, Check } from "lucide-react";
 import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
@@ -33,10 +35,13 @@ function ReviewEditor({
     [rating, setRating] = useState(String(existing?.rating ?? 5)),
     [busy, setBusy] = useState(false);
 
+  const [name,setName] = useState(existing?.display_name ?? "");
+  const [errorText,setErrorText] = useState("");
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase || busy) return;
-    setBusy(true);
+    if(body.trim().length < 10) { setErrorText("Describe your visit in at least 10 characters."); return; }
+    setErrorText(""); setBusy(true);
     try {
       const { error } = await supabase.from("reviews").upsert(
         {
@@ -44,15 +49,16 @@ function ReviewEditor({
           place_id: placeId,
           user_id: userId,
           rating: Number(rating),
-          body,
+          body:body.trim(),
+          ...(name.trim() || existing?.display_name ? {display_name:name.trim() || null} : {}),
         },
         { onConflict: "user_id,place_id" },
       );
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       await reload();
       setNotice("Your review was published as a community report.");
     } catch (e) {
-      setNotice(
+      setErrorText(
         e instanceof Error
           ? e.message
           : "Could not publish your review. Try again.",
@@ -65,28 +71,22 @@ function ReviewEditor({
   return (
     <form className="stack-form" onSubmit={submit}>
       <h3>{existing ? "Update your review" : "How was your visit?"}</h3>
-      <label>
-        Rating
-        <Dropdown value={rating} onChange={(e) => setRating(e.target.value)}>
-          {[5, 4, 3, 2, 1].map((n) => (
-            <option key={n} value={n}>
-              {n} stars
-            </option>
-          ))}
-        </Dropdown>
-      </label>
+      <fieldset><legend>Rating</legend><div className="review-stars">{[1,2,3,4,5].map(n=><label key={n} className="star-choice"><input type="radio" name="rating" aria-label={n+" stars"} checked={Number(rating)===n} onChange={()=>setRating(String(n))}/><Star aria-hidden="true" fill={Number(rating)>=n?"currentColor":"none"}/></label>)}</div></fieldset>
+      <label>Public name (optional)<input value={name} maxLength={80} onChange={e=>setName(e.target.value)} placeholder="Leave blank for an anonymous review"/></label>
       <label>
         Your experience
         <textarea
           required
-          minLength={10}
+          aria-describedby="review-length"
           maxLength={2000}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="What should the next visitor know?"
         />
       </label>
-      <Button disabled={busy}>
+      <small id="review-length">At least 10 characters · {body.trim().length}/2000</small>
+      {errorText && <p role="alert">{errorText}</p>}
+      <Button disabled={busy}><Check size={16}/>
         {busy ? "Publishing…" : existing ? "Update review" : "Publish review"}
       </Button>
     </form>
@@ -117,7 +117,7 @@ export default function PlacePage({
   if (loading)
     return (
       <main id="main" className="page">
-        <p>Loading place…</p>
+        <LoadingSkeleton label="Loading place"/>
       </main>
     );
   if (!place)
@@ -128,15 +128,10 @@ export default function PlacePage({
       </main>
     );
   const placeReviews = reviews.filter((r) => r.place_id === place.id);
+  const address = place.address.trim() || [place.name, place.neighborhood].join(", ");
+  const destination = encodeURIComponent(/casablanca/i.test(address) ? address : address + ", Casablanca, Morocco");
   const existing = placeReviews.find((r) => r.user_id === user?.id);
-  const offers = deals.filter(
-    (d) =>
-      d.place_id === place.id &&
-      d.expires_at >=
-        new Date().toLocaleDateString("en-CA", {
-          timeZone: "Africa/Casablanca",
-        }),
-  );
+  const offers = deals.filter(d => d.place_id === place.id && availableToday(d));
   async function removeReview(id: string) {
     if (!supabase) return;
     const { error } = await supabase.from("reviews").delete().eq("id", id);
@@ -197,7 +192,11 @@ export default function PlacePage({
               {place.kid_friendly && <span>Kid-friendly</span>}
             </div>
             <h3>What you can do</h3>
-            <p>{place.activities || "Activities have not been added yet."}</p>
+            {place.activities ? <div className="tags">{place.activities.split(",").map(a=>a.trim()).filter(Boolean).map((a,i)=><span key={i}>{a}</span>)}</div> : <p>Activities have not been added yet.</p>}
+            {place.visit?.franchise?.trim() && <div><h3>{place.visit.franchise} branches</h3>
+              <p>This location: {place.address || place.neighborhood}</p>
+              {places.filter(p=>p.id!==place.id && p.published && p.visit?.franchise?.trim().toLowerCase()===place.visit?.franchise?.trim().toLowerCase()).map(p=><p key={p.id}><Link href={"/places/"+p.slug}>{p.name} · {p.address || p.neighborhood}</Link></p>)}
+            </div>}
           </section>
           <section className="practical">
             <h2>Know before you go</h2>
@@ -213,7 +212,7 @@ export default function PlacePage({
                   <I size={21} />
                   <div>
                     <h3>{String(title)}</h3>
-                    <p>{String(text) || "Not yet provided."}</p>
+                    <p style={{ whiteSpace: "pre-line" }}>{String(text) || "Not yet provided."}</p>
                   </div>
                 </div>
               );
@@ -227,7 +226,7 @@ export default function PlacePage({
                   <h3>{d.title}</h3>
                   <p>{d.description}</p>
                   <p>{d.conditions}</p>
-                  <small>Valid through {d.expires_at}</small>
+                  <small>{scheduleText(d)}</small>
                 </article>
               ))}
             </section>
@@ -245,7 +244,7 @@ export default function PlacePage({
               <article className="review" key={r.id}>
                 <div>
                   <strong>
-                    <Star size={15} /> {r.rating}/5
+                    <span className="review-stars" aria-label={r.rating+" out of 5 stars"}>{[1,2,3,4,5].map(n=><Star key={n} size={16} fill={n<=r.rating?"currentColor":"none"}/>)}</span> {r.display_name || "Anonymous visitor"}
                   </strong>
                   <span>
                     {new Date(r.created_at).toLocaleDateString("en-GB")}
@@ -257,7 +256,7 @@ export default function PlacePage({
                     variant="ghost"
                     onClick={() => void removeReview(r.id)}
                   >
-                    Delete my review
+                    <Trash2 size={16}/> Delete my review
                   </Button>
                 )}
               </article>
@@ -297,12 +296,15 @@ export default function PlacePage({
           </p>
           <a
             className="button button-primary"
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.address || place.name + " Casablanca")}`}
+            href={place.visit?.googleMapsUrl?.startsWith("https://") ? place.visit.googleMapsUrl : `https://www.google.com/maps/dir/?api=1&destination=${destination}`}
             target="_blank"
             rel="noreferrer"
           >
             Open in Google Maps <ExternalLink size={16} />
           </a>
+          <a className="button button-outline"
+            href={place.visit?.wazeUrl?.startsWith("https://") ? place.visit.wazeUrl : `https://www.waze.com/ul?q=${destination}&navigate=yes`}
+            target="_blank" rel="noreferrer">Open in Waze <ExternalLink size={16}/></a>
           {/^https?:\/\//.test(place.website) && (
             <a
               className="button button-outline"

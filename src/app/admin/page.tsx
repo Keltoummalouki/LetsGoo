@@ -1,7 +1,14 @@
 "use client";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { week, scheduleText } from "@/lib/deal-schedule";
+import { Check } from "lucide-react";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { Dropdown } from "@/components/dropdown";
 import { DatePicker } from "@/components/date-picker";
-import { useEffect, useState } from "react";
+import { VisitEditor } from "@/components/visit-editor";
+import { visitFields } from "@/lib/visit";
+import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Plus, Pencil, Trash2, Upload, Compass, MapPin, Users, MessageSquare, Shapes, Ticket } from "lucide-react";
@@ -33,7 +40,8 @@ const blank: Omit<Place, "id"> = {
   activities: "",
   published: false,
 };
-export default function Admin() {
+export default function Admin() { return <Suspense fallback={<LoadingSkeleton label="Loading dashboard"/>}><AdminWorkspace/></Suspense>; }
+function AdminWorkspace() {
   const {
     admin,
     user,
@@ -46,7 +54,11 @@ export default function Admin() {
     reload,
     setNotice,
   } = useCatalog();
-  const [tab, setTab] = useState("overview"),
+  const neighborhoodPage = usePathname() === "/admin/neighborhoods";
+  const router = useRouter();
+  const selectedTab = useSearchParams().get("section") || "overview";
+  function setTab(section: string) { router.replace("/admin?section="+encodeURIComponent(section), {scroll:false}); }
+  const
     [editing, setEditing] = useState(false),
     [id, setId] = useState<string | null>(null),
     [form, setForm] = useState(blank),
@@ -55,7 +67,9 @@ export default function Admin() {
     [cats, setCats] = useState<string[]>([]),
     [areas, setAreas] = useState<string[]>([]),
     [taxonomy, setTaxonomy] = useState(""),
-    [kind, setKind] = useState("categories");
+    [dealError,setDealError] = useState("");
+  const tab = neighborhoodPage ? "neighborhoods" : selectedTab;
+  const kind = neighborhoodPage ? "neighborhoods" : "categories";
   const [taxonomyOriginal, setTaxonomyOriginal] = useState<string | null>(null);
   const [reviewPlace, setReviewPlace] = useState("");
   const [taxonomyOwner, setTaxonomyOwner] = useState<string | null>(null),
@@ -65,7 +79,7 @@ export default function Admin() {
       title: "",
       description: "",
       conditions: "",
-      expires_at: "",
+      expires_at: "", starts_on:"", min_members:null as number|null, weekdays:null as number[]|null,
     }),
     [dealId, setDealId] = useState<string | null>(null);
   useEffect(() => {
@@ -143,7 +157,7 @@ export default function Admin() {
     );
   const update = (key: keyof typeof blank, value: unknown) =>
     setForm((f) => ({ ...f, [key]: value }));
-  async function save(e: React.FormEvent) {
+  async function save(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!supabase) return;
     if (!cats.includes(form.category) || !areas.includes(form.neighborhood)) {
@@ -152,10 +166,17 @@ export default function Admin() {
     }
     setBusy(true);
     try {
+      const payload = {...form,...visitFields(form.visit || {})};
+      if (form.phone && form.phone !== places.find(p=>p.id===id)?.phone) {
+        const country = new FormData(e.currentTarget).get("phoneCountry") as CountryCode;
+        const phone = parsePhoneNumberFromString(form.phone,country);
+        if (!phone?.isValid()) throw new Error("Enter a valid phone number for the selected country.");
+        payload.phone = phone.number;
+      }
       const { error } = id
-        ? await supabase.from("places").update(form).eq("id", id)
-        : await supabase.from("places").insert(form);
-      if (error) throw error;
+        ? await supabase.from("places").update(payload).eq("id", id)
+        : await supabase.from("places").insert(payload);
+      if (error) throw new Error(error.code === "PGRST204" ? "Apply the place visit migration to enable structured details." : error.message);
       await reload();
       setEditing(false);
       setNotice("Place saved.");
@@ -204,28 +225,16 @@ export default function Admin() {
   async function saveDeal(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase) return;
-    if (!offer.expires_at) {
-      setNotice("Choose an expiration date before saving the offer.");
-      return;
-    }
-    setBusy(true);
-    const { error } = dealId
-      ? await supabase.from("deals").update(offer).eq("id", dealId)
-      : await supabase.from("deals").insert(offer);
-    setBusy(false);
-    if (error) setNotice(error.message);
-    else {
-      setOffer({
-        place_id: "",
-        title: "",
-        description: "",
-        conditions: "",
-        expires_at: "",
-      });
-      setDealId(null);
-      await reload();
-      setNotice("Deal saved.");
-    }
+    if (!offer.starts_on || !offer.expires_at || offer.starts_on > offer.expires_at) { setDealError("Choose a start date and an expiration date on or after it."); return; }
+    if (offer.weekdays?.length === 0) {setDealError("Select at least one available day."); return;}
+    setDealError(""); setBusy(true);
+    try {
+      const {error} = dealId ? await supabase.from("deals").update(offer).eq("id",dealId) : await supabase.from("deals").insert(offer);
+      if(error) throw new Error(error.message);
+      setOffer({place_id:"",title:"",description:"",conditions:"",starts_on:"",expires_at:"",min_members:null,weekdays:null});
+      setDealId(null); await reload(); setNotice("Deal saved.");
+    } catch(error) {setDealError(error instanceof Error ? error.message : "Could not save this deal. Try again.");}
+    finally {setBusy(false);}
   }
   async function addTaxonomy(e: React.FormEvent) {
     e.preventDefault();
@@ -272,7 +281,7 @@ export default function Admin() {
   const sections = [
     ["overview", "Overview", Compass],
     ["places", "Places", MapPin], ["reviews", "Reviews", MessageSquare], ["users", "Users", Users],
-    ["categories & locations", "Categories & locations", Shapes], ["deals", "Deals", Ticket],
+    ["categories", "Categories", Shapes], ["neighborhoods", "Neighborhoods", MapPin], ["deals", "Deals", Ticket],
   ] as const;
   return (
     <main id="main" className="page admin-page city-desk">
@@ -280,7 +289,7 @@ export default function Admin() {
       <div className="desk-brand"><Compass size={28}/> City Desk</div>
       <nav className="desk-nav" aria-label="Dashboard sections">
         {sections.map(([key,label,Icon]) => <button key={key} aria-current={tab === key ? "page" : undefined}
-          onClick={() => { setTab(key); setRemove(null); if(key === "reviews") setReviewPlace(""); }}>
+          onClick={() => { if(key==="neighborhoods"){router.push("/admin/neighborhoods"); return;} if(neighborhoodPage){router.push("/admin?section="+encodeURIComponent(key)); return;} setTab(key); setRemove(null); if(key === "reviews") setReviewPlace(""); }}>
           <Icon size={17}/>{label}</button>)}
       </nav>
       <Link href="/" className="desk-return">← Back to discovery</Link>
@@ -291,7 +300,7 @@ export default function Admin() {
         <span className="desk-location"><MapPin size={14}/> Casablanca</span></header>
       {tab === "overview" && <>
         <div className="desk-metrics">
-          {([["Places",catalog.length,"places",MapPin],["Reviews",reviews.length,"reviews",MessageSquare],["Categories",taxonomyLoading || taxonomyError ? "—" : cats.length,"categories & locations",Shapes]] as const).map(([label,count,target,Icon]) =>
+          {([["Places",catalog.length,"places",MapPin],["Reviews",reviews.length,"reviews",MessageSquare],["Categories",taxonomyLoading || taxonomyError ? "—" : cats.length,"categories",Shapes]] as const).map(([label,count,target,Icon]) =>
             <button key={target} onClick={() => setTab(target)}><Icon size={20}/><span>{label}</span><strong>{count}</strong><i aria-hidden="true">↗</i></button>)}
         </div>
         <div className="desk-overview">
@@ -370,7 +379,7 @@ export default function Admin() {
                           <Button
                             onClick={() => void deleteItem("places", p.id)}
                           >
-                            Confirm delete
+                            <Check size={16}/> Confirm delete
                           </Button>
                           <Button
                             variant="ghost"
@@ -401,11 +410,6 @@ export default function Admin() {
                     "name",
                     "slug",
                     "address",
-                    "activities",
-                    "hours",
-                    "transport",
-                    "parking",
-                    "phone",
                     "website",
                   ] as const
                 ).map((k) => (
@@ -473,6 +477,7 @@ export default function Admin() {
                   />
                 </label>
               </div>
+              <VisitEditor form={form} update={update} brands={Array.from(new Set(catalog.map(p=>p.visit?.franchise?.trim()).filter((brand): brand is string => !!brand)))}/>
               {(["description", "tips"] as const).map((k) => (
                 <label key={k}>
                   {k}
@@ -576,7 +581,7 @@ export default function Admin() {
                 <label key={k}>
                   {k.replace("_", " ")}
                   <input
-                    required
+                    required={k!=="conditions"}
                     type="text"
                     value={offer[k]}
                     onChange={(e) =>
@@ -586,6 +591,14 @@ export default function Admin() {
                 </label>
               ))}
             </div>
+            <DatePicker label="Start date" value={offer.starts_on} onChange={starts_on=>setOffer({...offer,starts_on})}/>
+            <fieldset><legend>Eligibility rules</legend>
+              <label className="checkbox-label"><input type="checkbox" checked={offer.min_members!==null} onChange={e=>setOffer({...offer,min_members:e.target.checked ? 2:null})}/>Minimum group size</label>
+              {offer.min_members!==null && <label>Number of people<input type="number" min="1" step="1" required value={offer.min_members || ""} onChange={e=>setOffer({...offer,min_members:Number(e.target.value)})}/></label>}
+              <label className="checkbox-label"><input type="checkbox" checked={offer.weekdays!==null} onChange={e=>setOffer({...offer,weekdays:e.target.checked ? [1,2,3,4,5,6,7]:null})}/>Limit to selected weekdays</label>
+              {offer.weekdays && week.map((day,i)=><label key={day} className="checkbox-label"><input type="checkbox" checked={offer.weekdays!.includes(i+1)} onChange={e=>setOffer({...offer,weekdays:e.target.checked ? [...offer.weekdays!,i+1].sort() : offer.weekdays!.filter(n=>n!==i+1)})}/>{day}</label>)}
+            </fieldset>
+            {dealError && <p role="alert">{dealError}</p>}
             <DatePicker label="Expiration date" value={offer.expires_at} onChange={expires_at => setOffer(current => ({ ...current, expires_at }))}/>
             <Button disabled={busy}>{busy ? "Saving…" : "Save offer"}</Button>
           </form>
@@ -594,7 +607,7 @@ export default function Admin() {
               <article key={d.id}>
                 <div>
                   <h3>{d.title}</h3>
-                  <p>Expires {d.expires_at}</p>
+                  <p>{scheduleText(d)}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -605,7 +618,7 @@ export default function Admin() {
                       title: d.title,
                       description: d.description,
                       conditions: d.conditions,
-                      expires_at: d.expires_at,
+                      expires_at: d.expires_at, starts_on:d.starts_on || "", min_members:d.min_members ?? null, weekdays:d.weekdays ?? null,
                     });
                   }}
                 >
@@ -614,7 +627,7 @@ export default function Admin() {
                 {remove === d.id ? (
                   <>
                     <Button onClick={() => void deleteItem("deals", d.id)}>
-                      Confirm delete
+                      <Check size={16}/> Confirm delete
                     </Button>
                     <Button variant="ghost" onClick={() => setRemove(null)}>
                       Cancel
@@ -622,7 +635,7 @@ export default function Admin() {
                   </>
                 ) : (
                   <Button variant="ghost" onClick={() => setRemove(d.id)}>
-                    Delete
+                    <Trash2 size={16}/> Delete
                   </Button>
                 )}
               </article>
@@ -642,7 +655,7 @@ export default function Admin() {
                 <h3>
                   {places.find((p) => p.id === r.place_id)?.name} · {r.rating}/5
                 </h3>
-                <p>{r.body}</p>
+                <p>{r.display_name || "Anonymous visitor"} · {r.body}</p>
               </div>
               {remove === r.id ? (
                 <>
@@ -655,32 +668,18 @@ export default function Admin() {
                 </>
               ) : (
                 <Button variant="outline" onClick={() => setRemove(r.id)}>
-                  Remove review
+                  <Trash2 size={16}/> Remove review
                 </Button>
               )}
             </article>
           ))}
         </div>
       )}
-      {tab === "categories & locations" && (
+      {(tab === "categories" || neighborhoodPage) && (
         <>
           <form className="stack-form taxonomy-form" onSubmit={addTaxonomy}>
-            <h2>Organize the catalog</h2>
-            <label>
-              Type
-              <Dropdown
-                value={kind}
-                onChange={(e) => {
-                  setKind(e.target.value);
-                  setTaxonomyOriginal(null);
-                  setTaxonomy("");
-                  setRemove(null);
-                }}
-              >
-                <option value="categories">Category</option>
-                <option value="neighborhoods">Neighborhood</option>
-              </Dropdown>
-            </label>
+            <h2>{neighborhoodPage ? "Manage neighborhoods" : "Manage categories"}</h2>
+            {taxonomyLoading && <LoadingSkeleton label="Loading directory"/>}{taxonomyError && <p role="alert">{taxonomyError}</p>}
             <label>
               Name
               <input
@@ -718,12 +717,12 @@ export default function Admin() {
                     setTaxonomy(c);
                   }}
                 >
-                  Rename
+                  <Pencil size={16} aria-hidden="true"/> Rename
                 </Button>
                 {remove === `taxonomy:${c}` ? (
                   <>
                     <Button onClick={() => void removeTaxonomy(c)}>
-                      Confirm delete
+                      <Check size={16}/> Confirm delete
                     </Button>
                     <Button variant="ghost" onClick={() => setRemove(null)}>
                       Cancel
@@ -734,7 +733,7 @@ export default function Admin() {
                     variant="ghost"
                     onClick={() => setRemove(`taxonomy:${c}`)}
                   >
-                    Delete
+                    <Trash2 size={16}/> Delete
                   </Button>
                 )}
               </article>

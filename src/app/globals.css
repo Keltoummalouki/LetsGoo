@@ -1500,3 +1500,10 @@ legend {
     max-width: 100%;
   }
 }
+.loading-skeleton { display:grid; gap:12px; padding:16px 0; }
+.loading-skeleton i { height:18px; border-radius:6px; background:#e4e9df; }
+.loading-skeleton i:last-child { width:60%; }
+.review-stars { display:inline-flex; gap:3px; align-items:center; color:#a45619; }
+.star-choice { display:inline-flex; cursor:pointer; position:relative; padding:8px; }
+.star-choice input { position:absolute; opacity:0; }
+.star-choice:focus-within { outline:2px solid var(--primary); border-radius:5px; }

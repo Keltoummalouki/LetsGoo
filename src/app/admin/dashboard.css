@@ -45,3 +45,15 @@
 .desk-filter select { border: 1px solid var(--border); border-radius: 8px; padding: 9px; }
 @media(max-width:960px) { .page.city-desk { grid-template-columns: 1fr; } .desk-rail { position: static; } .desk-nav { display: flex; flex-wrap: wrap; } .desk-brand { padding-bottom: 12px; } .desk-return { display: none; } }
 @media(max-width:680px) { .desk-overview { grid-template-columns: 1fr; } .desk-metrics { gap: 6px; } .desk-metrics i { display: none; } .desk-location { display: none; } .desk-place { flex-wrap: wrap; } .city-desk .admin-list article > div { min-width: 0; flex-basis: 100%; } }
+.visit-editor { display: grid; gap: 16px; }
+.visit-editor fieldset { min-width: 0; display: grid; gap: 10px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; }
+.visit-editor legend { padding: 0 5px; font-weight: 650; }
+.visit-editor .tags button { background: #e3ede3; padding: 5px 10px; border-radius: 12px; }
+.visit-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border); padding: 8px 0; }
+.visit-row label { flex: 1 1 110px; }
+.visit-editor .checkbox-label { display: flex; flex-direction: row; align-items: center; }
+.visit-editor .branch-phone { display:flex; align-items:stretch; border:1px solid var(--border); border-radius:8px; background:white; overflow:hidden; }
+.visit-editor .branch-phone:focus-within { outline:2px solid var(--primary); outline-offset:2px; }
+.city-desk .branch-phone select,.city-desk .branch-phone input { border:0; border-radius:0; margin:0; min-width:0; }
+.city-desk .branch-phone select { width:8em; flex:none; border-right:1px solid var(--border); }
+.city-desk .branch-phone input { flex:1; }

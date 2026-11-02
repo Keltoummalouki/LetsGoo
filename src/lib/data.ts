@@ -1,4 +1,5 @@
 export type Place = {
+  visit?: import("./visit").Visit | null;
   id: string;
   slug: string;
   name: string;
@@ -22,6 +23,9 @@ export type Place = {
   published: boolean;
 };
 export type Deal = {
+  starts_on?: string | null;
+  min_members?: number | null;
+  weekdays?: number[] | null;
   id: string;
   place_id: string;
   title: string;
@@ -30,6 +34,7 @@ export type Deal = {
   expires_at: string;
 };
 export type Review = {
+  display_name?: string | null;
   id: string;
   place_id: string;
   user_id: string;

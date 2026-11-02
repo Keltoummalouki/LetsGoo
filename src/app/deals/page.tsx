@@ -1,15 +1,15 @@
 "use client";
+import { availableToday, scheduleText } from "@/lib/deal-schedule";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import Link from "next/link";
 import { Ticket, ArrowUpRight } from "lucide-react";
 import { useCatalog } from "@/components/catalog-provider";
 export default function Deals() {
   const { deals, places, loading } = useCatalog();
-  const today = new Date().toLocaleDateString("en-CA", {
-    timeZone: "Africa/Casablanca",
-  });
+
   const active = deals.filter(
     (d) =>
-      d.expires_at >= today &&
+      availableToday(d) &&
       places.some((p) => p.id === d.place_id && p.published),
   );
   return (
@@ -17,7 +17,7 @@ export default function Deals() {
       <h1>Good plans. Better prices.</h1>
       <p className="page-intro">A little extra reason to get out there.</p>
       {loading ? (
-        <p>Checking the latest offers…</p>
+        <LoadingSkeleton label="Loading offers"/>
       ) : active.length ? (
         <div className="deals-list">
           {active.map((d) => {
@@ -33,7 +33,7 @@ export default function Deals() {
                   <strong>Conditions:</strong>{" "}
                   {d.conditions || "Ask the venue for full conditions."}
                 </p>
-                <p>Valid through {d.expires_at}</p>
+                <p>{scheduleText(d)}</p>
                 <Link href={`/places/${p.slug}`}>
                   See the place <ArrowUpRight size={17} />
                 </Link>
